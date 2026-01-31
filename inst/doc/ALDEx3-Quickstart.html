@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>ALDEx3-Quickstart</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">ALDEx3-Quickstart</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(ALDEx3)</span></code></pre></div>
+<div id="aldex3" class="section level1">
+<h1>ALDEx3</h1>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><strong>ALDEx3</strong> is the successor to <strong>ALDEx2</strong>,
+providing improved computational efficiency and support for both fixed-
+and mixed-effects models. It enables statistically principled inference
+on both <strong>relative</strong> and <strong>absolute</strong>
+abundances from sequencing count data (e.g., RNA-seq or 16S rRNA gene
+sequencing).</p>
+<p>Like ALDEx2, ALDEx3 models sequencing counts using a
+<strong>Dirichlet–multinomial</strong> framework, which accounts for
+sampling variability and naturally accommodates zero counts through the
+multinomial likelihood (e.g., the model does not require treating zeros
+as true structural absences).</p>
+<p>High-throughput sequencing data contain only <strong>relative
+information</strong>: the overall biological <em>scale</em> is
+unobserved (unidentifiable). Here, <em>scale</em> refers to quantities
+such as total microbial load, total cellular RNA content, or total
+biomass. Standard normalization-based workflows implicitly fix this
+unmeasured scale using strong and often untestable assumptions. When
+these assumptions are violated, normalization can induce substantial
+bias, inflate false discovery rates, or mask true biological
+effects.</p>
+<p>ALDEx3 addresses this limitation by explicitly modeling <strong>scale
+uncertainty</strong>. Rather than fixing scale through normalization,
+ALDEx3 uses <strong>scale models</strong>—probability distributions that
+represent uncertainty in the unobserved scale and propagate that
+uncertainty into downstream inference. This approach generalizes
+normalization while making its assumptions explicit and testable.</p>
+<p>Scale models can be specified in several ways, including: 1. As
+uncertainty induced by normalization procedures (e.g., total-sum scaling
+or log-ratio–based approaches), 2. Using external measurements of scale
+(e.g., flow cytometry, qPCR, or spike-ins), or 3. Through weak
+biological prior information (e.g., assuming an antibiotic reduces total
+microbial load by 20–80%).</p>
+<p>By treating scale as a latent random variable rather than a fixed
+normalization constant, ALDEx3 enables coherent inference for both
+relative and absolute effects and supports complex experimental designs
+via mixed-effects modeling.</p>
+<p>Before using ALDEx3, users are <strong>strongly encouraged</strong>
+to read:</p>
+<blockquote>
+<p><strong>Nixon, Gloor, and Silverman (2025).</strong><br />
+<em>Incorporating scale uncertainty in microbiome and gene expression
+analysis as an extension of normalization</em>.<br />
+<strong>Genome Biology</strong>.<br />
+<a href="https://link.springer.com/article/10.1186/s13059-025-03609-3" class="uri">https://link.springer.com/article/10.1186/s13059-025-03609-3</a></p>
+</blockquote>
+<p>This article provides the theoretical motivation for scale models,
+explains why normalization implicitly fixes unmeasured scale, and
+demonstrates how explicitly modeling scale uncertainty improves
+robustness and reproducibility in differential abundance and expression
+analyses.</p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">&quot;devtools&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">&quot;devtools&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>}</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;jsilve24/ALDEx3&quot;</span>)</span></code></pre></div>
+</div>
+<div id="quickstart-inference-with-relative-abundances" class="section level2">
+<h2>Quickstart (Inference with Relative Abundances)</h2>
+<p><em>Note</em>: the following examples use the CLR scale model often
+with zero scale uncertainty <code>gamma=0</code>. This is generally a
+bad idea but is shown here just for backwards comparability with the
+defaults in ALDEx2. In general we strongly recommend carefully thinking
+about the choice of scale model (see <a href="https://link.springer.com/article/10.1186/s13059-025-03609-3" class="uri">https://link.springer.com/article/10.1186/s13059-025-03609-3</a>
+for a background on the subject). In the worst case scenario where the
+user is unwilling to carefully design a scale model, we recommend
+choosing <code>scale=tss.sm</code> and <code>gamma=0.5</code>as a
+default.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># Load Crohn&#39;s Disease vs. Control Data</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">data</span>(gut_crohns_data)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">: We recommend a ~75% sparsity filter of counts!</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"># This is a pragmatic default for speed and stability in very sparse tables;</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># adjust based on your depth and scientific question. Always keep an aggregated</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"># ‘other’ category so each sample’s total count is preserved under the count</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co"># model.</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>Y <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>counts</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>keep_names <span class="ot">&lt;-</span> <span class="fu">row.names</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&lt;=</span><span class="fl">0.75</span>,])</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>other <span class="ot">&lt;-</span> <span class="fu">colSums</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&gt;</span><span class="fl">0.75</span>,])</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>Y <span class="ot">&lt;-</span> Y[keep_names,]</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Y, other)</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co"># Metadata Samples x Metadata Values</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>X <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>metadata</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>X<span class="sc">$</span>Health.status <span class="ot">&lt;-</span> <span class="fu">factor</span>(X<span class="sc">$</span>Health.status, <span class="at">levels=</span><span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;CD&quot;</span>))</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co"># Relative Abundances CD vs. Control</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>aldex.gut.raw <span class="ot">&lt;-</span> <span class="fu">aldex</span>(Y,</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>                       <span class="sc">~</span>Health.status,</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>                       X,</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>                       <span class="at">nsample=</span><span class="dv">2000</span>,</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>                       <span class="at">scale=</span>clr.sm,   <span class="co"># CLR assumption</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>                       <span class="at">gamma=</span><span class="dv">0</span>)        <span class="co"># Gamma=0 no scale uncertainty</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>aldex.gut.summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(aldex.gut.raw)</span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="fu">head</span>(aldex.gut.summary)</span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;         parameter          entity   estimate std.error   p.val.adj</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt; 1 Health.statusCD    Agathobacter  3.4427036  1.500150 0.146352623</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; 2 Health.statusCD     Akkermansia -0.9509523  1.119066 0.797674468</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; 3 Health.statusCD       Alistipes -0.8547089  1.188096 0.868896117</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; 4 Health.statusCD Anaerobutyricum  2.0096506  1.209952 0.411322714</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; 5 Health.statusCD    Anaerostipes -1.0223508  1.010964 0.729975305</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt; 6 Health.statusCD     Bacteroides  5.3739786  1.362744 0.003758113</span></span></code></pre></div>
+</div>
+<div id="mixed-effects-models-sr-mem" class="section level2">
+<h2>Mixed Effects Models (SR-MEM)</h2>
+<p>Here is an example data analysis using the published <a href="https://www.biorxiv.org/content/10.1101/2025.08.05.668734v1">SR-MEM
+method</a> (Scale Reliant Mixed Effects Models). Mixed effects modeling
+can be performed in ALDEx3 with either the lme4 or nlme interfaces.
+Note, while parallelization can make these model practical, they are
+still slower than the linear models (enhancements to come).</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co"># Load Data</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">data</span>(oral_mouthwash_data)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># 75% Sparsity Filter</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>Y <span class="ot">&lt;-</span> oral_mouthwash_data<span class="sc">$</span>counts</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>keep_names <span class="ot">&lt;-</span> <span class="fu">row.names</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&lt;=</span><span class="fl">0.75</span>,])</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>other <span class="ot">&lt;-</span> <span class="fu">colSums</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&gt;</span><span class="fl">0.75</span>,])</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>Y <span class="ot">&lt;-</span> Y[keep_names,]</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Y, other)</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>X <span class="ot">&lt;-</span> oral_mouthwash_data<span class="sc">$</span>metadata</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co"># Fixed Effects: Interaction between Treatment and Discrete Time Point</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co"># Random Effects: Random intercept for each study participant</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>aldex.mouthwash.raw <span class="ot">&lt;-</span> <span class="fu">aldex</span>(Y,</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>                             <span class="sc">~</span>treat<span class="sc">*</span>timec<span class="sc">+</span>(<span class="dv">1</span><span class="sc">|</span>participant_id),</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>                             X,</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>                             <span class="at">n.cores=</span><span class="dv">2</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>                             <span class="at">method=</span><span class="st">&quot;lme4&quot;</span>,   <span class="co"># Required</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>                             <span class="at">nsample=</span><span class="dv">250</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>                             <span class="at">scale=</span>clr.sm,    <span class="co"># CLR assumpsion </span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>                             <span class="at">gamma=</span><span class="dv">0</span>)         <span class="co"># Gamma=0 no scale uncertainty</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>aldex.mouthwash.summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(aldex.mouthwash.raw)</span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="fu">head</span>(aldex.mouthwash.summary)</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;                                    parameter         entity   estimate std.error  p.val.adj</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; 1                  treatantiseptic-mouthwash g__Haemophilus  2.3758996 0.8194347 0.34395960</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; 2                 treatalcoholfree-mouthwash g__Haemophilus  3.2202728 0.8194347 0.01730350</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; 3                                  treatsoda g__Haemophilus  1.6586761 0.8194347 0.91485045</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; 4                           timec15min-later g__Haemophilus  0.8264883 0.6341158 0.99985081</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; 5                            timec2hrs-later g__Haemophilus  2.3811563 0.6341158 0.03716786</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; 6 treatantiseptic-mouthwash:timec15min-later g__Haemophilus -2.3012944 0.8967751 0.40475473</span></span></code></pre></div>
+</div>
+<div id="inference-with-absolute-abundances-defining-scale-models" class="section level2">
+<h2>Inference with Absolute Abundances: Defining Scale Models</h2>
+<p>The Quickstart considered the relative abundances of taxa in the guts
+of patients with Crohn’s Disease (CD) vs. Control. Here <strong>absolute
+abundances</strong> are modeled using three different approaches to
+<strong>scale models</strong>.</p>
+<div id="weak-prior-biological-knowledge" class="section level3">
+<h3>Weak Prior Biological Knowledge</h3>
+<p>Consider prior studies suggest individuals with CD have on average 2
+log2-fold lower total gut microbial load. If
+θ<sup>tot</sup><sub>CD</sub> is the average log2-fold change in gut
+microbial load in CD vs. Control, we assume
+θ<sup>tot</sup><sub>CD</sub>=-2. However, to account for potential
+uncertainty in this assumption, we define a scale model as a Normal
+distribution with standard deviation of <span class="math inline">\(0.5\)</span>: θ<sup>tot</sup><sub>CD</sub> ~
+<em>N</em> (-2, 0.5<sup>2</sup>). In ALDEx3 this is done with the
+<code>coef.sm</code> scale model and the parameters <code>c.mu</code>
+and <code>c.cor</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co"># Load Data</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">data</span>(gut_crohns_data)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">: We recommend a ~75% sparsity filter of counts!</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co"># Genera w/ sparsity &gt; 75% amalgamated into &#39;other&#39; row</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co"># Keep other counts for multinomial-Dirichlet accuracy</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>Y <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>counts</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>keep_names <span class="ot">&lt;-</span> <span class="fu">row.names</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&lt;=</span><span class="fl">0.75</span>,])</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>other <span class="ot">&lt;-</span> <span class="fu">colSums</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&gt;</span><span class="fl">0.75</span>,])</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>Y <span class="ot">&lt;-</span> Y[keep_names,]</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Y, other)</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co"># Metadata Samples x Metadata Values</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>X <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>metadata</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>X<span class="sc">$</span>Health.status <span class="ot">&lt;-</span> <span class="fu">factor</span>(X<span class="sc">$</span>Health.status,</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>                           <span class="at">levels=</span><span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;CD&quot;</span>))</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># Fit Before vs. After teeth brushing</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co"># relative abundance changes</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>aldex.gut.abs.raw <span class="ot">&lt;-</span> <span class="fu">aldex</span>(Y,</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>                       <span class="sc">~</span>Health.status,</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>                       X,</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>                       <span class="at">nsample=</span><span class="dv">2000</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>                       <span class="at">scale=</span>coefficient.sm,   <span class="co"># coef scale model</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>                       <span class="at">c.mu=</span><span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">2</span>),   <span class="co"># c(intercept, CD)</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>                       <span class="at">c.cor=</span><span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span><span class="sc">**</span><span class="dv">2</span>)))</span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt; Error: object &#39;coefficient.sm&#39; not found</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a>aldex.gut.abs.summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(aldex.gut.abs.raw)</span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt; Error: object &#39;aldex.gut.abs.raw&#39; not found</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="fu">head</span>(aldex.gut.abs.summary)</span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; Error: object &#39;aldex.gut.abs.summary&#39; not found</span></span></code></pre></div>
+</div>
+<div id="external-scale-measurements-ideal" class="section level3">
+<h3>External Scale Measurements (Ideal)</h3>
+<p>In the Crohn’s dataset we have flow cytometry measurements of fecal
+microbial load for each sample. If w<sup>tot</sup><sub>n</sub> and
+q<sub>n</sub> are the scale and flow cytometry measurement for sample n,
+respectively, we define the scale model as w<sup>tot</sup><sub>n</sub> ~
+<em>N</em> (log2 q<sub>n</sub>, 0.5<sup>2</sup>). In ALDEx3, here we use
+the <code>sample.sm</code> scale model which takes <code>s.mu</code> and
+<code>s.var</code> as arguments:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co"># Load Data</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">data</span>(gut_crohns_data)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">: We recommend a ~75% sparsity filter of counts!</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co"># Genera w/ sparsity &gt; 75% amalgamated into &#39;other&#39; row</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co"># Keep other counts for multinomial-Dirichlet accuracy</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>Y <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>counts</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>keep_names <span class="ot">&lt;-</span> <span class="fu">row.names</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&lt;=</span><span class="fl">0.75</span>,])</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>other <span class="ot">&lt;-</span> <span class="fu">colSums</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&gt;</span><span class="fl">0.75</span>,])</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>Y <span class="ot">&lt;-</span> Y[keep_names,]</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Y, other)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co"># Metadata Samples x Metadata Values</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>X <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>metadata</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>X<span class="sc">$</span>Health.status <span class="ot">&lt;-</span> <span class="fu">factor</span>(X<span class="sc">$</span>Health.status,</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>                           <span class="at">levels=</span><span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;CD&quot;</span>))</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co"># Log2 Scale Measurements</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>s.mu <span class="ot">&lt;-</span> <span class="fu">log2</span>(X<span class="sc">$</span>Average.cell.count..per.gram.of.frozen.feces.)</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co"># Account For Potential Technical Error in Measurements</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>s.var <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fl">0.25</span>, <span class="fu">length</span>(s.mu))</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co"># Estimate Absolute Abundance Changes</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>aldex.gut.abs.raw <span class="ot">&lt;-</span> <span class="fu">aldex</span>(Y,</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>                       <span class="sc">~</span>Health.status,</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>                       X,</span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>                       <span class="at">nsample=</span><span class="dv">2000</span>,</span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>                       <span class="at">scale=</span>sample.sm,         <span class="co"># coef scale model</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>                       <span class="at">s.mu=</span>s.mu,</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>                       <span class="at">s.var=</span>s.var)</span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>aldex.gut.abs.summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(aldex.gut.abs.raw)</span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="fu">head</span>(aldex.gut.abs.summary)</span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt;         parameter          entity   estimate std.error    p.val.adj</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; 1 Health.statusCD    Agathobacter -1.8036338  1.704191 3.585030e-01</span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; 2 Health.statusCD     Akkermansia -6.1972896  1.171886 1.341654e-05</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; 3 Health.statusCD       Alistipes -6.1010462  1.306783 4.760054e-05</span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="co">#&gt; 4 Health.statusCD Anaerobutyricum -3.2366868  1.403536 4.306112e-02</span></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="co">#&gt; 5 Health.statusCD    Anaerostipes -6.2686881  1.171873 8.778170e-06</span></span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a><span class="co">#&gt; 6 Health.statusCD     Bacteroides  0.1276413  1.499862 9.689928e-01</span></span></code></pre></div>
+</div>
+</div>
+<div id="normalization-uncertainty" class="section level2">
+<h2>Normalization Uncertainty</h2>
+<p>The Quickstart used the CLR to infer changes in relative abundances.
+While not the most powerful approach, we can define a scale model to
+account for uncertainty in how closely CLR transformed abundances match
+absolute abundances. <a href="https://link.springer.com/article/10.1186/s13059-025-03609-3">Nixon
+et al. show for this exact dataset that this approach can still
+substantially reduce false positives</a>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co"># Load Data</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">data</span>(gut_crohns_data)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">: We recommend a ~75% sparsity filter of counts!</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co"># Genera w/ sparsity &gt; 75% amalgamated into &#39;other&#39; row</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># Keep other counts for multinomial-Dirichlet accuracy</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>Y <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>counts</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>keep_names <span class="ot">&lt;-</span> <span class="fu">row.names</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&lt;=</span><span class="fl">0.75</span>,])</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>other <span class="ot">&lt;-</span> <span class="fu">colSums</span>(Y[((<span class="fu">rowSums</span>(Y<span class="sc">==</span><span class="dv">0</span>))<span class="sc">/</span><span class="fu">ncol</span>(Y))<span class="sc">&gt;</span><span class="fl">0.75</span>,])</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>Y <span class="ot">&lt;-</span> Y[keep_names,]</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Y, other)</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co"># Metadata Samples x Metadata Values</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>X <span class="ot">&lt;-</span> gut_crohns_data<span class="sc">$</span>metadata</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>X<span class="sc">$</span>Health.status <span class="ot">&lt;-</span> <span class="fu">factor</span>(X<span class="sc">$</span>Health.status,</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>                           <span class="at">levels=</span><span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;CD&quot;</span>))</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co"># Fit Before vs. After teeth brushing; absolute abundances</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>aldex.gut.raw <span class="ot">&lt;-</span> <span class="fu">aldex</span>(Y,</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>                       <span class="sc">~</span>Health.status,</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>                       X,</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>                       <span class="at">nsample=</span><span class="dv">2000</span>,</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>                       <span class="at">scale=</span>clr.sm,  <span class="co"># CLR assumption</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>                       <span class="at">gamma=</span><span class="dv">1</span>)       <span class="co"># Gamma=1: variance in CLR assumption </span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>aldex.gut.summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(aldex.gut.raw)</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="fu">head</span>(aldex.gut.summary)</span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt;         parameter          entity   estimate std.error  p.val.adj</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt; 1 Health.statusCD    Agathobacter  3.4571869  1.500150 0.24152676</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt; 2 Health.statusCD     Akkermansia -0.9364690  1.119066 0.68923913</span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; 3 Health.statusCD       Alistipes -0.8402256  1.188096 0.72889977</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt; 4 Health.statusCD Anaerobutyricum  2.0241339  1.209952 0.45935038</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; 5 Health.statusCD    Anaerostipes -1.0078675  1.010964 0.63593939</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; 6 Health.statusCD     Bacteroides  5.3884619  1.362744 0.02308018</span></span></code></pre></div>
+</div>
+<div id="model-outputs" class="section level2">
+<h2>Model Outputs</h2>
+<p>The output of <code>summary.aldex</code> is typically most useful. It
+looks like:</p>
+<pre><code>        parameter          entity   estimate std.error    p.val.adj
+1 Health.statusCD    Agathobacter -1.7951101  1.702948 3.665291e-01
+2 Health.statusCD     Akkermansia -6.1827824  1.168809 9.867942e-06
+3 Health.statusCD       Alistipes -6.1123999  1.307723 4.871389e-05
+4 Health.statusCD Anaerobutyricum -3.2153272  1.397338 4.276630e-02
+5 Health.statusCD    Anaerostipes -6.2694178  1.177097 9.477381e-06
+6 Health.statusCD     Bacteroides  0.1164949  1.503918 9.687594e-01</code></pre>
+<p>The output is a data.frame which includes: - parameter: The name of
+the regression parameter for the result, typical of the summary output
+of <code>lm</code>, <code>lmer</code>, etc. - entity: The taxon or gene
+name for that result (corresponding to <code>row.names</code> of input
+counts <code>Y</code>) - estimate: The average regression coefficient
+across Monte Carlo draws - std.err: The average regression standard
+error across Monte Carlo draws - p.val.adj: The BH adjusted p-values
+combined from Monte Carlo draws using special procedure</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
