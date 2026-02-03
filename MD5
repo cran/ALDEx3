@@ -1,4 +1,4 @@
-b37862edcd05e14362ee01a58ca7c425 *DESCRIPTION
+b6a256488c11a1070a0b139b983cd75b *DESCRIPTION
 bcd29d3c14bf26243e5e340aa49c5b8a *LICENSE
 73c63dd7881be4bc4f0dda8c0d1b08e0 *NAMESPACE
 fcbc08dea9c2898e5141f1b34f185e2d *NEWS.md
@@ -7,7 +7,7 @@ fcbc08dea9c2898e5141f1b34f185e2d *NEWS.md
 5ee97394f52c844691cd7b1efd94285b *R/aldex.R
 5a1c4e64270043b4c2b95bd10611d5fa *R/coda.R
 d58fbf54c6e191de97600e69792a7662 *R/data.R
-6f7f70f35f88fa5adca83a07fcc6c808 *R/dirichlet.R
+67038eb965643fb11fbe2a2b42f5dc1a *R/dirichlet.R
 0524abb5835794bb00fec5d72a4726ac *R/fflm.R
 2c8638568eeb45cef842a8efbbd33f7f *R/scale.R
 8e0079424ea0d1074c8f45b2d11b3e26 *R/simulation.R
@@ -39,7 +39,7 @@ e7a1b0b7138e324822a35e22fed0870c *man/sr.mem.Rd
 f0646d7e4a2b57a2d29c19de4b0ebb8d *man/summary.aldex.Rd
 c1f3852fa7cc167566934ca83982d14d *man/tss.sm.Rd
 904638012c780aea7dfc8baad124bc42 *tests/testthat.R
-68838372fbb0d762ff1f2f25f1ca99da *tests/testthat/test-aldex-mem.R
+6b9701954863a46ea6c1a43180ced4d3 *tests/testthat/test-aldex-mem.R
 4244c5dcd5066f04fbec029bf8245eb8 *tests/testthat/test-aldex-summary.R
 2f2cac15033a3b2e4322857ff9bb6142 *tests/testthat/test-aldex_lm.R
 1b1273f61e9584d3c7714d5cabcf17d8 *tests/testthat/test-coda.R
