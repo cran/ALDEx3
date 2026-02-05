@@ -1,4 +1,4 @@
-b6a256488c11a1070a0b139b983cd75b *DESCRIPTION
+ff1327020b5a1ece1de2ec3e15cfc35a *DESCRIPTION
 bcd29d3c14bf26243e5e340aa49c5b8a *LICENSE
 73c63dd7881be4bc4f0dda8c0d1b08e0 *NAMESPACE
 fcbc08dea9c2898e5141f1b34f185e2d *NEWS.md
@@ -39,7 +39,7 @@ e7a1b0b7138e324822a35e22fed0870c *man/sr.mem.Rd
 f0646d7e4a2b57a2d29c19de4b0ebb8d *man/summary.aldex.Rd
 c1f3852fa7cc167566934ca83982d14d *man/tss.sm.Rd
 904638012c780aea7dfc8baad124bc42 *tests/testthat.R
-6b9701954863a46ea6c1a43180ced4d3 *tests/testthat/test-aldex-mem.R
+4359a98534f2a64f318b7d71e87af017 *tests/testthat/test-aldex-mem.R
 4244c5dcd5066f04fbec029bf8245eb8 *tests/testthat/test-aldex-summary.R
 2f2cac15033a3b2e4322857ff9bb6142 *tests/testthat/test-aldex_lm.R
 1b1273f61e9584d3c7714d5cabcf17d8 *tests/testthat/test-coda.R
