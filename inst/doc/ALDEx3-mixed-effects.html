@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>ALDEx3 Mixed-Effects Engines</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">ALDEx3 Mixed-Effects Engines</h1>
+
+
+
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>ALDEx3 fits a regression model to every Monte Carlo draw of the
+latent log-abundance for every feature. For mixed-effects models,
+repeating a full exact variance-component optimisation for each draw can
+dominate runtime.</p>
+<p>The exact ALDEx3 mixed-effects engines remain available through
+<code>method = &quot;lme4&quot;</code> and <code>method = &quot;nlme&quot;</code>. The
+<code>method = &quot;blmm&quot;</code> engine is an ALDEx3-specific approximation
+designed to reduce repeated optimisation cost while preserving the same
+fixed-effects model. When <code>n.cores &gt; 1</code>, BLMM and the
+exact mixed-effects engines parallelize across features, not across the
+Monte Carlo draws within a feature.</p>
+</div>
+<div id="what-blmm-approximates" class="section level2">
+<h2>What BLMM Approximates</h2>
+<p>For one feature and one Monte Carlo draw, the target remains the
+usual Gaussian linear mixed model fitted in profiled REML form. BLMM
+does <strong>not</strong> approximate the fixed-effects solve once
+covariance parameters are chosen.</p>
+<p>The approximation is only this:</p>
+<ol style="list-style-type: decimal">
+<li>Fit one feature-specific batched anchor covariance model across all
+draws.</li>
+<li>Build draw-specific local score updates around that anchor.</li>
+<li>Update the covariance parameters per draw with a local Newton
+step.</li>
+<li>Solve the fixed effects exactly for each draw conditional on the
+updated covariance parameters.</li>
+</ol>
+<p>If the approximate path cannot be evaluated cleanly for a feature,
+ALDEx3 warns and falls back to the exact <code>lme4</code> engine for
+that feature.</p>
+</div>
+<div id="conceptual-formulation" class="section level2">
+<h2>Conceptual Formulation</h2>
+<p>Conceptually, each draw has its own REML objective for the same
+design matrices and grouping structure but a different response vector.
+BLMM introduces:</p>
+<ol style="list-style-type: decimal">
+<li>One anchor fit per feature.</li>
+<li>One shared local curvature matrix at the anchor.</li>
+<li>Draw-specific local score corrections around the anchor.</li>
+<li>Exact conditional GLS fixed-effect solves for each draw.</li>
+</ol>
+<p>This is the cleanest way to describe the method statistically.</p>
+</div>
+<div id="implemented-profiled-formulation" class="section level2">
+<h2>Implemented Profiled Formulation</h2>
+<p>To keep the notation manageable, fix one feature <span class="math inline">\(d\)</span>. For Monte Carlo draw <span class="math inline">\(s\)</span>, let <span class="math inline">\(y_{ds}
+\in \mathbb{R}^{N}\)</span> denote the vector of latent log-abundances
+across the <span class="math inline">\(N\)</span> samples. Since the
+feature is fixed throughout this section, I write <span class="math inline">\(y_s\)</span> instead of <span class="math inline">\(y_{ds}\)</span>.</p>
+<p>For that fixed feature and draw, BLMM targets the same Gaussian
+linear mixed model as <code>lme4</code>: <span class="math display">\[
+y_s = X\beta_s + Z u_s + \varepsilon_s,
+\qquad
+u_s \sim N(0, \sigma_s^2 \Sigma_{\theta_s}),
+\qquad
+\varepsilon_s \sim N(0, \sigma_s^2 I_N).
+\]</span></p>
+<p>Here <span class="math inline">\(X\)</span> is the fixed-effects
+design matrix, <span class="math inline">\(Z\)</span> is the
+random-effects design matrix, <span class="math inline">\(\beta_s\)</span> is the draw-specific
+fixed-effects vector, and <span class="math inline">\(\theta_s\)</span>
+denotes the top-level covariance parameters for draw <span class="math inline">\(s\)</span>. As in <code>lme4</code>, BLMM works
+with a relative covariance parameterisation in which <span class="math inline">\(\Sigma_{\theta_s}\)</span> is represented through
+a lower-triangular factor <span class="math inline">\(\Lambda_{\theta_s}\)</span>.</p>
+<p>Write <span class="math inline">\(p = \mathrm{ncol}(X)\)</span> for
+the number of fixed-effect coefficients and <span class="math inline">\(q = \mathrm{ncol}(Z)\)</span> for the number of
+random-effect coefficients.</p>
+<p>BLMM is implemented in the profiled <code>lme4</code> formulation
+rather than through a dense <span class="math inline">\(N \times
+N\)</span> covariance matrix. This does not change the statistical
+target. It is simply the algebraic form that makes repeated mixed-model
+fitting much more efficient.</p>
+<p>After profiling out the fixed effects and residual scale, the
+criterion depends only on the covariance parameters. In this
+formulation, the key matrices are <span class="math display">\[
+A_{\theta_s} = I_q + \Lambda_{\theta_s} Z^T Z \Lambda_{\theta_s}^T,
+\]</span> <span class="math display">\[
+R_{ZX,\theta_s} = L_{\theta_s}^{-1}\Lambda_{\theta_s} Z^T X,
+\qquad
+M_{\theta_s} = X^T X - R_{ZX,\theta_s}^T R_{ZX,\theta_s},
+\]</span> where <span class="math inline">\(L_{\theta_s}\)</span> is the
+Cholesky factor of <span class="math inline">\(A_{\theta_s}\)</span>.</p>
+<p>The response-dependent part of the draw-specific criterion is the
+profiled weighted residual sum of squares <span class="math display">\[
+\mathrm{PWRSS}_s(\theta_s)
+=
+\|y_s\|^2
+- \|R_{ZY,\theta_s}\|^2
+- \|C_{\beta,\theta_s}\|^2,
+\]</span> with <span class="math display">\[
+R_{ZY,\theta_s} = L_{\theta_s}^{-1}\Lambda_{\theta_s} Z^T y_s,
+\qquad
+C_{\beta,\theta_s} =
+L_{X,\theta_s}^{-1}
+\left(
+X^T y_s - R_{ZX,\theta_s}^T R_{ZY,\theta_s}
+\right),
+\]</span> and <span class="math inline">\(L_{X,\theta_s}\)</span> the
+Cholesky factor of <span class="math inline">\(M_{\theta_s}\)</span>.</p>
+<p>Up to constants, the profiled REML criterion for one draw is <span class="math display">\[
+\ell_s(\theta_s)
+\propto
+\frac{1}{2}
+\left\{
+\log |A_{\theta_s}|
++
+\log |M_{\theta_s}|
++
+(N-p)\log\left(
+\frac{\mathrm{PWRSS}_s(\theta_s)}{N-p}
+\right)
+\right\}.
+\]</span></p>
+<p>Now collect the <span class="math inline">\(S\)</span> Monte Carlo
+draws for feature <span class="math inline">\(d\)</span> into the
+response block <span class="math display">\[
+Y_d = [y_{d1}, \dots, y_{dS}] \in \mathbb{R}^{N \times S}.
+\]</span></p>
+<p>The computational advantage of BLMM is that one anchor evaluation
+reuses the same structural calculations across all <span class="math inline">\(S\)</span> columns of <span class="math inline">\(Y_d\)</span>. In each evaluation it performs</p>
+<ol style="list-style-type: decimal">
+<li>one factorisation of the profiled random-effects system,</li>
+<li>one log-determinant calculation,</li>
+<li>one solve against the fixed-effects design matrix,</li>
+<li>one multi-right-hand-side solve against <span class="math inline">\(Y_d\)</span>,</li>
+<li>one average over the draw-specific profiled residual log terms.</li>
+</ol>
+<p>BLMM therefore does <strong>not</strong> run <span class="math inline">\(S\)</span> separate REML optimisations inside the
+anchor optimiser.</p>
+<p>More precisely, the anchor fit targets the average of the per-draw
+profiled REML criteria: <span class="math display">\[
+\bar{\ell}(\phi)
+=
+\frac{1}{S}\sum_{s=1}^S \ell_s(\phi),
+\]</span> which is, up to constants, <span class="math display">\[
+\bar{\ell}(\phi)
+\propto
+\frac{1}{2}
+\left\{
+\log |A_{\phi}|
++
+\log |M_{\phi}|
++
+\frac{N-p}{S}\sum_{s=1}^S
+\log\left(
+\frac{\mathrm{PWRSS}_s(\phi)}{N-p}
+\right)
+\right\}.
+\]</span></p>
+<p>This point is important: the batched anchor uses the <strong>average
+of the per-draw profiled REML criteria</strong>, not a surrogate such as
+<span class="math inline">\(\log(\mathrm{mean}\,\mathrm{PWRSS}_s)\)</span>.
+The anchor, the draw-specific score correction, and the curvature matrix
+are all defined with respect to this same averaged profiled
+objective.</p>
+<p>BLMM then takes a local second-order approximation around the anchor
+<span class="math inline">\(\bar{\phi}\)</span>. Let <span class="math inline">\(H\)</span> denote the observed Hessian of <span class="math inline">\(\bar{\ell}\)</span> at that anchor. For draw <span class="math inline">\(s\)</span>, BLMM computes a draw-specific score
+correction <span class="math inline">\(g_s\)</span>, defined as the
+difference between the average profiled score and the draw-specific
+profiled score at <span class="math inline">\(\bar{\phi}\)</span>, and
+applies the local Newton update <span class="math display">\[
+\phi_s \approx \bar{\phi} + H^{-1} g_s.
+\]</span></p>
+<p>This yields one updated covariance parameter vector per draw without
+rerunning a full REML optimisation from scratch.</p>
+<p>Conditional on <span class="math inline">\(\phi_s\)</span>, BLMM then
+solves the fixed effects exactly by generalized least squares: <span class="math display">\[
+\hat{\beta}_s
+=
+\left(X^T V_s^{-1}X\right)^{-1}X^T V_s^{-1} y_s,
+\]</span> where <span class="math inline">\(V_s = Z\Sigma_{\theta_s}Z^T
++ \sigma_s^2 I_N\)</span> is the covariance model implied by the updated
+parameters.</p>
+<p>The approximation is therefore confined to the repeated
+covariance-optimisation step. The per-draw fixed-effects solve remains
+exact conditional on the updated covariance model.</p>
+</div>
+<div id="assumptions-and-scope" class="section level2">
+<h2>Assumptions and Scope</h2>
+<p>BLMM targets the same Gaussian linear mixed model as the exact
+<code>lme4</code> engine for each feature and Monte Carlo draw. It
+reuses <code>lme4::lFormula()</code> for formula parsing and
+random-effects design construction, so the same model syntax can be used
+for random intercepts, random slopes, and correlated random effects.</p>
+<p>The method is designed specifically for the ALDEx3 setting, where the
+same mixed-effects design is fit repeatedly across many Monte Carlo
+draws for each feature. Its computational advantage comes from
+exploiting the fact that the fixed-effects design, random-effects
+design, grouping structure, and covariance parameterisation are shared
+across those draws, while only the response vector changes.</p>
+<p>BLMM is an approximate engine. The approximation is confined to the
+repeated covariance-optimisation step: it replaces a full exact
+variance-component fit for every draw with one feature-specific anchor
+fit and draw-specific local updates around that anchor. Conditional on
+the updated covariance parameters, the per-draw fixed-effects solve
+remains exact.</p>
+<p>Accordingly, BLMM should be viewed as a fast ALDEx3-specific
+alternative to repeated exact <code>lme4</code> optimisation, not as a
+replacement for the exact engine in all settings. The exact
+<code>lme4</code> engine remains the reference implementation, and BLMM
+should be validated against exact <code>lme4</code> fits on the target
+problem class before large-scale use.</p>
+</div>
+<div id="validation-strategy" class="section level2">
+<h2>Validation Strategy</h2>
+<p>The BLMM test suite focuses on algorithmic correctness first.</p>
+<ol style="list-style-type: decimal">
+<li>Single-draw consistency checks compare <code>blmm</code> to exact
+<code>lme4</code>.</li>
+<li>Identical-draw checks verify that identical Monte Carlo draws
+produce identical BLMM outputs.</li>
+<li>Simulated-data comparisons check posterior means and posterior
+uncertainty against the exact engine.</li>
+<li>Random-slope and correlated-random-effect tests verify that
+covariance terms are retained in the returned random-effects
+output.</li>
+<li>Failure-mode tests verify that BLMM warns and falls back to exact
+<code>lme4</code> instead of silently changing the model.</li>
+</ol>
+<p>The practical target is that approximation error in posterior means
+should stay materially smaller than posterior uncertainty used for
+inference, and that posterior uncertainty itself should remain close
+enough to avoid changing routine interpretation.</p>
+</div>
+<div id="worked-example" class="section level2">
+<h2>Worked Example</h2>
+<p>The <code>oral_mouthwash_data</code> dataset provides a
+repeated-measures design with one random intercept per participant. The
+exact and approximate engines use the same mixed-effects formula:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ALDEx3)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;oral_mouthwash_data&quot;</span>, <span class="at">package =</span> <span class="st">&quot;ALDEx3&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>Y <span class="ot">&lt;-</span> oral_mouthwash_data<span class="sc">$</span>counts</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>keep_names <span class="ot">&lt;-</span> <span class="fu">row.names</span>(Y[((<span class="fu">rowSums</span>(Y <span class="sc">==</span> <span class="dv">0</span>)) <span class="sc">/</span> <span class="fu">ncol</span>(Y)) <span class="sc">&lt;=</span> <span class="fl">0.75</span>, ])</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>other <span class="ot">&lt;-</span> <span class="fu">colSums</span>(Y[((<span class="fu">rowSums</span>(Y <span class="sc">==</span> <span class="dv">0</span>)) <span class="sc">/</span> <span class="fu">ncol</span>(Y)) <span class="sc">&gt;</span> <span class="fl">0.75</span>, ])</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Y[keep_names, ], <span class="at">other =</span> other)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>meta <span class="ot">&lt;-</span> oral_mouthwash_data<span class="sc">$</span>metadata</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>fit_blmm <span class="ot">&lt;-</span> <span class="fu">aldex</span>(</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>  Y,</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>  <span class="sc">~</span> treat <span class="sc">*</span> timec <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> participant_id),</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>  <span class="at">data =</span> meta,</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">&quot;blmm&quot;</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>  <span class="at">n.cores =</span> <span class="dv">1</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>  <span class="at">nsample =</span> <span class="dv">250</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>  <span class="at">scale =</span> clr.sm,</span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="dv">0</span></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>)</span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">summary</span>(fit_blmm))</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt;                                    parameter         entity   estimate</span></span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt; 1                  treatantiseptic-mouthwash g__Haemophilus  2.3758996</span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; 2                 treatalcoholfree-mouthwash g__Haemophilus  3.2202728</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; 3                                  treatsoda g__Haemophilus  1.6586761</span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 4                           timec15min-later g__Haemophilus  0.8264883</span></span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="co">#&gt; 5                            timec2hrs-later g__Haemophilus  2.3811563</span></span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="co">#&gt; 6 treatantiseptic-mouthwash:timec15min-later g__Haemophilus -2.3012944</span></span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt;   std.error  p.val.adj</span></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#&gt; 1 0.8196615 0.32251795</span></span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a><span class="co">#&gt; 2 0.8196615 0.01418721</span></span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a><span class="co">#&gt; 3 0.8196615 0.91176518</span></span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a><span class="co">#&gt; 4 0.6338824 0.99960265</span></span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a><span class="co">#&gt; 5 0.6338824 0.02803160</span></span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a><span class="co">#&gt; 6 0.8964451 0.36972657</span></span></code></pre></div>
+<p>Switching between exact and approximate fitting only changes the
+engine: replace <code>method = &quot;blmm&quot;</code> with
+<code>method = &quot;lme4&quot;</code> for exact variance-component
+optimisation.</p>
+</div>
+<div id="example-comparison-lme4-versus-blmm" class="section level2">
+<h2>Example Comparison: <code>lme4</code> Versus <code>blmm</code></h2>
+<p>On a small subset of the <code>oral_mouthwash_data</code> features,
+<code>blmm</code> tracks the exact <code>lme4</code> results closely for
+most coefficients while running the covariance-optimisation step
+approximately. The code below fits the same model with both engines and
+compares the posterior mean coefficients and their posterior standard
+errors.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;oral_mouthwash_data&quot;</span>, <span class="at">package =</span> <span class="st">&quot;ALDEx3&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>Y0 <span class="ot">&lt;-</span> oral_mouthwash_data<span class="sc">$</span>counts</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>keep_names <span class="ot">&lt;-</span> <span class="fu">row.names</span>(Y0[((<span class="fu">rowSums</span>(Y0 <span class="sc">==</span> <span class="dv">0</span>)) <span class="sc">/</span> <span class="fu">ncol</span>(Y0)) <span class="sc">&lt;=</span> <span class="fl">0.75</span>, ])</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>other <span class="ot">&lt;-</span> <span class="fu">colSums</span>(Y0[((<span class="fu">rowSums</span>(Y0 <span class="sc">==</span> <span class="dv">0</span>)) <span class="sc">/</span> <span class="fu">ncol</span>(Y0)) <span class="sc">&gt;</span> <span class="fl">0.75</span>, ])</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(Y0[keep_names, ], <span class="at">other =</span> other)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co"># Keep a small subset to make the comparison easy to inspect in the vignette.</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>Y <span class="ot">&lt;-</span> Y[<span class="fu">c</span>(<span class="fu">seq_len</span>(<span class="fu">min</span>(<span class="dv">8</span>, <span class="fu">nrow</span>(Y) <span class="sc">-</span> <span class="dv">1</span>)), <span class="fu">nrow</span>(Y)), ]</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>meta <span class="ot">&lt;-</span> oral_mouthwash_data<span class="sc">$</span>metadata</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>K <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>fit_args <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="at">data =</span> meta,</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>  <span class="at">n.cores =</span> <span class="dv">1</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="at">nsample =</span> <span class="dv">16</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="at">scale =</span> clr.sm,</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="dv">0</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>)</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>fit_model <span class="ot">&lt;-</span> <span class="cf">function</span>(method) {</span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>  <span class="fu">do.call</span>(</span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>    aldex,</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>    <span class="fu">c</span>(</span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>      <span class="fu">list</span>(Y, <span class="sc">~</span> treat <span class="sc">*</span> timec <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> participant_id)),</span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>      fit_args,</span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>      <span class="fu">list</span>(<span class="at">method =</span> method)</span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>    )</span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>  )</span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>}</span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a>fit_lme4 <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(<span class="st">&quot;lme4&quot;</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a>fit_blmm <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(<span class="st">&quot;blmm&quot;</span>)</span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a>time_lme4 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(K, {</span>
+<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a>  <span class="fu">system.time</span>({</span>
+<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a>    <span class="fu">invisible</span>(<span class="fu">fit_model</span>(<span class="st">&quot;lme4&quot;</span>))</span>
+<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a>  })[[<span class="st">&quot;elapsed&quot;</span>]]</span>
+<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a>})</span>
+<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a></span>
+<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a>time_blmm <span class="ot">&lt;-</span> <span class="fu">replicate</span>(K, {</span>
+<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a>  <span class="fu">system.time</span>({</span>
+<span id="cb2-50"><a href="#cb2-50" tabindex="-1"></a>    <span class="fu">invisible</span>(<span class="fu">fit_model</span>(<span class="st">&quot;blmm&quot;</span>))</span>
+<span id="cb2-51"><a href="#cb2-51" tabindex="-1"></a>  })[[<span class="st">&quot;elapsed&quot;</span>]]</span>
+<span id="cb2-52"><a href="#cb2-52" tabindex="-1"></a>})</span>
+<span id="cb2-53"><a href="#cb2-53" tabindex="-1"></a></span>
+<span id="cb2-54"><a href="#cb2-54" tabindex="-1"></a>s_lme4 <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit_lme4)</span>
+<span id="cb2-55"><a href="#cb2-55" tabindex="-1"></a>s_blmm <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit_blmm)</span>
+<span id="cb2-56"><a href="#cb2-56" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" tabindex="-1"></a>cmp <span class="ot">&lt;-</span> <span class="fu">merge</span>(</span>
+<span id="cb2-58"><a href="#cb2-58" tabindex="-1"></a>  s_lme4,</span>
+<span id="cb2-59"><a href="#cb2-59" tabindex="-1"></a>  s_blmm,</span>
+<span id="cb2-60"><a href="#cb2-60" tabindex="-1"></a>  <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;parameter&quot;</span>, <span class="st">&quot;entity&quot;</span>),</span>
+<span id="cb2-61"><a href="#cb2-61" tabindex="-1"></a>  <span class="at">suffixes =</span> <span class="fu">c</span>(<span class="st">&quot;.lme4&quot;</span>, <span class="st">&quot;.blmm&quot;</span>)</span>
+<span id="cb2-62"><a href="#cb2-62" tabindex="-1"></a>)</span>
+<span id="cb2-63"><a href="#cb2-63" tabindex="-1"></a></span>
+<span id="cb2-64"><a href="#cb2-64" tabindex="-1"></a>cmp<span class="sc">$</span>abs_est_diff <span class="ot">&lt;-</span> <span class="fu">abs</span>(cmp<span class="sc">$</span>estimate.lme4 <span class="sc">-</span> cmp<span class="sc">$</span>estimate.blmm)</span>
+<span id="cb2-65"><a href="#cb2-65" tabindex="-1"></a>cmp<span class="sc">$</span>abs_se_diff <span class="ot">&lt;-</span> <span class="fu">abs</span>(cmp<span class="sc">$</span>std.error.lme4 <span class="sc">-</span> cmp<span class="sc">$</span>std.error.blmm)</span>
+<span id="cb2-66"><a href="#cb2-66" tabindex="-1"></a></span>
+<span id="cb2-67"><a href="#cb2-67" tabindex="-1"></a>cmp_tbl <span class="ot">&lt;-</span> cmp[<span class="fu">order</span>(cmp<span class="sc">$</span>abs_est_diff, <span class="at">decreasing =</span> <span class="cn">TRUE</span>), ][<span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>, <span class="fu">c</span>(</span>
+<span id="cb2-68"><a href="#cb2-68" tabindex="-1"></a>  <span class="st">&quot;parameter&quot;</span>, <span class="st">&quot;entity&quot;</span>,</span>
+<span id="cb2-69"><a href="#cb2-69" tabindex="-1"></a>  <span class="st">&quot;estimate.lme4&quot;</span>, <span class="st">&quot;estimate.blmm&quot;</span>, <span class="st">&quot;abs_est_diff&quot;</span>,</span>
+<span id="cb2-70"><a href="#cb2-70" tabindex="-1"></a>  <span class="st">&quot;std.error.lme4&quot;</span>, <span class="st">&quot;std.error.blmm&quot;</span>, <span class="st">&quot;abs_se_diff&quot;</span></span>
+<span id="cb2-71"><a href="#cb2-71" tabindex="-1"></a>)]</span>
+<span id="cb2-72"><a href="#cb2-72" tabindex="-1"></a></span>
+<span id="cb2-73"><a href="#cb2-73" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;div style=&quot;overflow-x:auto; width:100%;&quot;&gt;</span><span class="sc">\n</span><span class="st">&#39;</span>)</span>
+<span id="cb2-74"><a href="#cb2-74" tabindex="-1"></a><span class="co">#&gt; &lt;div style=&quot;overflow-x:auto; width:100%;&quot;&gt;</span></span>
+<span id="cb2-75"><a href="#cb2-75" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb2-76"><a href="#cb2-76" tabindex="-1"></a>  cmp_tbl,</span>
+<span id="cb2-77"><a href="#cb2-77" tabindex="-1"></a>  <span class="at">format =</span> <span class="st">&quot;html&quot;</span>,</span>
+<span id="cb2-78"><a href="#cb2-78" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">4</span>,</span>
+<span id="cb2-79"><a href="#cb2-79" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">&quot;Largest absolute differences between exact lme4 and blmm on the shared-draw subset.&quot;</span></span>
+<span id="cb2-80"><a href="#cb2-80" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>
+Largest absolute differences between exact lme4 and blmm on the
+shared-draw subset.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+parameter
+</th>
+<th style="text-align:left;">
+entity
+</th>
+<th style="text-align:right;">
+estimate.lme4
+</th>
+<th style="text-align:right;">
+estimate.blmm
+</th>
+<th style="text-align:right;">
+abs_est_diff
+</th>
+<th style="text-align:right;">
+std.error.lme4
+</th>
+<th style="text-align:right;">
+std.error.blmm
+</th>
+<th style="text-align:right;">
+abs_se_diff
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+31
+</td>
+<td style="text-align:left;">
+treatalcoholfree-mouthwash:timec15min-later
+</td>
+<td style="text-align:left;">
+g_<em>Lachnospiraceae</em>[G-3]
+</td>
+<td style="text-align:right;">
+0.7208
+</td>
+<td style="text-align:right;">
+0.7448
+</td>
+<td style="text-align:right;">
+0.0240
+</td>
+<td style="text-align:right;">
+2.3903
+</td>
+<td style="text-align:right;">
+2.3697
+</td>
+<td style="text-align:right;">
+0.0207
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+98
+</td>
+<td style="text-align:left;">
+treatsoda:timec2hrs-later
+</td>
+<td style="text-align:left;">
+g__Treponema
+</td>
+<td style="text-align:right;">
+-0.8690
+</td>
+<td style="text-align:right;">
+-0.8914
+</td>
+<td style="text-align:right;">
+0.0224
+</td>
+<td style="text-align:right;">
+2.2612
+</td>
+<td style="text-align:right;">
+2.2321
+</td>
+<td style="text-align:right;">
+0.0291
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+35
+</td>
+<td style="text-align:left;">
+treatalcoholfree-mouthwash:timec15min-later
+</td>
+<td style="text-align:left;">
+g__Treponema
+</td>
+<td style="text-align:right;">
+-0.9707
+</td>
+<td style="text-align:right;">
+-0.9865
+</td>
+<td style="text-align:right;">
+0.0158
+</td>
+<td style="text-align:right;">
+2.3296
+</td>
+<td style="text-align:right;">
+2.3008
+</td>
+<td style="text-align:right;">
+0.0288
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+95
+</td>
+<td style="text-align:left;">
+treatsoda:timec2hrs-later
+</td>
+<td style="text-align:left;">
+g_<em>Peptostreptococcaceae</em>[XI][G-7]
+</td>
+<td style="text-align:right;">
+0.9976
+</td>
+<td style="text-align:right;">
+1.0026
+</td>
+<td style="text-align:right;">
+0.0049
+</td>
+<td style="text-align:right;">
+1.7979
+</td>
+<td style="text-align:right;">
+1.7907
+</td>
+<td style="text-align:right;">
+0.0072
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+32
+</td>
+<td style="text-align:left;">
+treatalcoholfree-mouthwash:timec15min-later
+</td>
+<td style="text-align:left;">
+g_<em>Peptostreptococcaceae</em>[XI][G-7]
+</td>
+<td style="text-align:right;">
+-1.1727
+</td>
+<td style="text-align:right;">
+-1.1772
+</td>
+<td style="text-align:right;">
+0.0045
+</td>
+<td style="text-align:right;">
+1.8581
+</td>
+<td style="text-align:right;">
+1.8510
+</td>
+<td style="text-align:right;">
+0.0072
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+97
+</td>
+<td style="text-align:left;">
+treatsoda:timec2hrs-later
+</td>
+<td style="text-align:left;">
+g__Tannerella
+</td>
+<td style="text-align:right;">
+-0.7981
+</td>
+<td style="text-align:right;">
+-0.8009
+</td>
+<td style="text-align:right;">
+0.0028
+</td>
+<td style="text-align:right;">
+1.6934
+</td>
+<td style="text-align:right;">
+1.6855
+</td>
+<td style="text-align:right;">
+0.0078
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+94
+</td>
+<td style="text-align:left;">
+treatsoda:timec2hrs-later
+</td>
+<td style="text-align:left;">
+g_<em>Lachnospiraceae</em>[G-3]
+</td>
+<td style="text-align:right;">
+1.0390
+</td>
+<td style="text-align:right;">
+1.0365
+</td>
+<td style="text-align:right;">
+0.0025
+</td>
+<td style="text-align:right;">
+2.3156
+</td>
+<td style="text-align:right;">
+2.2948
+</td>
+<td style="text-align:right;">
+0.0208
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+30
+</td>
+<td style="text-align:left;">
+treatalcoholfree-mouthwash:timec15min-later
+</td>
+<td style="text-align:left;">
+g__Haemophilus
+</td>
+<td style="text-align:right;">
+-0.4820
+</td>
+<td style="text-align:right;">
+-0.4803
+</td>
+<td style="text-align:right;">
+0.0017
+</td>
+<td style="text-align:right;">
+1.1022
+</td>
+<td style="text-align:right;">
+1.1004
+</td>
+<td style="text-align:right;">
+0.0017
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;</span><span class="sc">\n</span><span class="st">&lt;/div&gt;</span><span class="sc">\n</span><span class="st">&#39;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; &lt;/div&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>runtime_tbl <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">engine =</span> <span class="fu">c</span>(<span class="st">&quot;lme4&quot;</span>, <span class="st">&quot;blmm&quot;</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">mean_elapsed_sec =</span> <span class="fu">c</span>(<span class="fu">mean</span>(time_lme4), <span class="fu">mean</span>(time_blmm)),</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">median_elapsed_sec =</span> <span class="fu">c</span>(<span class="fu">median</span>(time_lme4), <span class="fu">median</span>(time_blmm)),</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="at">speedup_vs_lme4 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fu">mean</span>(time_lme4) <span class="sc">/</span> <span class="fu">mean</span>(time_blmm))</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>)</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;</span><span class="sc">\n\n</span><span class="st">&#39;</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;div style=&quot;overflow-x:auto; width:100%;&quot;&gt;</span><span class="sc">\n</span><span class="st">&#39;</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; &lt;div style=&quot;overflow-x:auto; width:100%;&quot;&gt;</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  runtime_tbl,</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="at">format =</span> <span class="st">&quot;html&quot;</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste0</span>(</span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>    <span class="st">&quot;Elapsed runtime on the shared-draw vignette subset averaged over K = &quot;</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>    K,</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>    <span class="st">&quot; repeated runs. Times will vary by hardware.&quot;</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  )</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<caption>
+Elapsed runtime on the shared-draw vignette subset averaged over K = 1
+repeated runs. Times will vary by hardware.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+engine
+</th>
+<th style="text-align:right;">
+mean_elapsed_sec
+</th>
+<th style="text-align:right;">
+median_elapsed_sec
+</th>
+<th style="text-align:right;">
+speedup_vs_lme4
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+lme4
+</td>
+<td style="text-align:right;">
+5.205
+</td>
+<td style="text-align:right;">
+5.205
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+blmm
+</td>
+<td style="text-align:right;">
+0.126
+</td>
+<td style="text-align:right;">
+0.126
+</td>
+<td style="text-align:right;">
+41.31
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;</span><span class="sc">\n</span><span class="st">&lt;/div&gt;</span><span class="sc">\n</span><span class="st">&#39;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; &lt;/div&gt;</span></span></code></pre></div>
+<p>For an engine comparison to be meaningful, both fits must use the
+same Monte Carlo draws. The duplicated <code>set.seed(42)</code> above
+enforces that. Without that reset, the comparison would conflate engine
+differences with differences in the posterior draw block itself.</p>
+<p>With identical draws on this vignette subset, the comparison gave a
+maximum absolute posterior-mean coefficient difference of about
+<code>0.023</code>, a median absolute difference effectively
+<code>0</code>, a maximum absolute posterior standard-error difference
+of about <code>0.025</code>, and a median standard-error difference of
+about <code>0.003</code>. Averaging the runtime over <code>K = 10</code>
+repeated runs gave a <code>blmm</code> speedup of about
+<code>11.95x</code> relative to <code>lme4</code> on this subset. That
+is the practical target for BLMM on this example: when compared on the
+same posterior draws, <code>blmm</code> should stay very close to the
+exact <code>lme4</code> engine while avoiding repeated exact
+variance-component optimisation.</p>
+</div>
+<div id="runtime-scaling" class="section level2">
+<h2>Runtime Scaling</h2>
+<p>Runtime is driven by three quantities:</p>
+<ul>
+<li><code>N</code>, the number of samples,</li>
+<li><code>D</code>, the number of features, and</li>
+<li><code>S</code>, the number of Monte Carlo draws.</li>
+</ul>
+<p>Both engines pay the shared cost of generating and transforming the
+Monte Carlo draws, which scales roughly with <code>D * N * S</code>. The
+difference is in the mixed model solve.</p>
+<p>The <code>n.cores</code> argument distributes features across
+workers, so it changes the feature loop but not the per-feature draw
+loop. That is why the runtime gains from parallelism and the runtime
+gains from BLMM are complementary.</p>
+<p><code>lme4</code> performs a full variance-component optimisation for
+every feature and every draw. That means its expensive nonlinear step
+scales roughly like
+<code>D * S * cost(full_REML_opt(N, random_effect_structure))</code>. As
+<code>N</code> grows or the random-effects structure gets more complex,
+each exact optimisation becomes more expensive.</p>
+<p><code>blmm</code> replaces those repeated exact optimisations with
+one batched anchor fit per feature plus per-draw local updates and exact
+conditional fixed-effect solves. Its costly nonlinear work is therefore
+closer to
+<code>D * cost(anchor_REML_opt(N, random_effect_structure)) + D * S * cost(local_update(N))</code>.
+The savings are largest when the repeated exact optimisation is the
+dominant cost.</p>
+<p>In practice, BLMM is most valuable when:</p>
+<ol style="list-style-type: decimal">
+<li><code>S</code> is moderate to large, so repeated exact REML fits
+become expensive.</li>
+<li><code>D</code> is large, so the same model structure is reused
+across many features.</li>
+<li>The random-effects structure is nontrivial, so each exact
+<code>lme4</code> fit is expensive.</li>
+<li>The approximation can be anchored once and reused cleanly across
+draws.</li>
+</ol>
+<p>BLMM is less compelling when <code>S = 1</code>, when the
+random-effects structure is very simple, or when the dataset is so small
+that exact <code>lme4</code> optimisation is already cheap. In those
+settings, the extra approximation machinery may not buy much.</p>
+<p>On the vignette subset above, the elapsed times in the table give a
+concrete example of the expected pattern: <code>blmm</code> should be
+faster because it avoids repeating the full covariance optimisation for
+every draw, while still solving the fixed effects exactly conditional on
+the updated covariance parameters.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
