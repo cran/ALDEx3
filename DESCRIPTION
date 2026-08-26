@@ -1,6 +1,6 @@
 Package: ALDEx3
 Title: Linear Models for Sequence Count Data
-Version: 1.2.0
+Version: 1.3.1
 Authors@R: 
     c(person("Justin", "Silverman", email = "JustinSilverman@psu.edu", role = c("aut", "cre")),
       person("Greg", "Gloor", email = "ggloor@uwo.ca", role = c("aut")),
@@ -21,10 +21,10 @@ VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0
 SystemRequirements: C++17
 NeedsCompilation: yes
-Packaged: 2026-07-15 18:53:34 UTC; jds6696
+Packaged: 2026-08-26 14:46:56 UTC; jds6696
 Author: Justin Silverman [aut, cre],
   Greg Gloor [aut],
   Kyle McGovern [aut, ctb]
 Maintainer: Justin Silverman <JustinSilverman@psu.edu>
 Repository: CRAN
-Date/Publication: 2026-07-15 19:40:02 UTC
+Date/Publication: 2026-08-26 15:40:02 UTC

@@ -1,4 +1,27 @@
-# ALDEx3 1.2.0
+# ALDEx3 1.3.1
+
+## Maintenance
+
+- Registered TMB native routines and disabled dynamic symbol lookup for
+  portable compiled-code checks.
+- Made the ALDEx2 compatibility regression test robust to the R 4.7.0
+  binomial RNG change by checking overall p-value agreement and matching
+  significance decisions instead of a strict elementwise tolerance.
+
+# ALDEx3 1.3.0
+
+## User Facing Changes
+
+- Harmonized independent scale-uncertainty inputs on standard deviations:
+  `sample.sm()` now accepts `s.sd`, and `coefficient.sm()` now accepts `c.sd`.
+- Added explicitly named `s.cov` and `c.cov` arguments for covariance matrices.
+  The legacy `s.var`, `s.cor`, and `c.cor` arguments retain their original
+  semantics with deprecation warnings until ALDEx3 2.0.0.
+- Clarified that `gamma` is a standard deviation in `clr.sm()` and `tss.sm()`,
+  and documented that sample-level and coefficient-level priors have different
+  covariance structures even when their SD inputs are numerically equal.
+- Added a two-group coefficient-scale example explaining how factor reference
+  levels determine the sign of a group offset.
 
 ## New Features
 
@@ -31,4 +54,3 @@
 
 - 1000x (approx) speed up in HC3 and HC0 standard error calculations. Note this was rate limiting before so this is a huge performance boost. 
 - Fixed error with how the streamsize variable was calibrated. Leads to massive improvement in memory management. 
-
