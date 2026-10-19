@@ -127,7 +127,7 @@ knitr::kable(
   caption = paste0(
     "Elapsed runtime on the shared-draw vignette subset averaged over K = ",
     K,
-    " repeated runs. Times will vary by hardware."
+    " timing run(s). Times will vary by hardware."
   )
 )
 cat('\n</div>\n')

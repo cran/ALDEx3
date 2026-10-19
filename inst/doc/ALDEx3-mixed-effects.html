@@ -358,9 +358,9 @@ Monte Carlo draws within a feature.</p>
 <div id="what-blmm-approximates" class="section level2">
 <h2>What BLMM Approximates</h2>
 <p>For one feature and one Monte Carlo draw, the target remains the
-usual Gaussian linear mixed model fitted in profiled REML form. BLMM
-does <strong>not</strong> approximate the fixed-effects solve once
-covariance parameters are chosen.</p>
+usual Gaussian linear mixed model fitted by profiled restricted maximum
+likelihood (REML). BLMM does <strong>not</strong> approximate the
+fixed-effects solve once covariance parameters are chosen.</p>
 <p>The approximation is only this:</p>
 <ol style="list-style-type: decimal">
 <li>Fit one feature-specific batched anchor covariance model across all
@@ -368,12 +368,17 @@ draws.</li>
 <li>Build draw-specific local score updates around that anchor.</li>
 <li>Update the covariance parameters per draw with a local Newton
 step.</li>
-<li>Solve the fixed effects exactly for each draw conditional on the
-updated covariance parameters.</li>
+<li>Check that each proposed update does not materially worsen its
+draw’s profiled REML objective; refit rejected draws with exact
+<code>lme4</code>.</li>
+<li>Solve the fixed effects exactly for each accepted draw conditional
+on the updated covariance parameters.</li>
 </ol>
-<p>If the approximate path cannot be evaluated cleanly for a feature,
-ALDEx3 warns and falls back to the exact <code>lme4</code> engine for
-that feature.</p>
+<p>If the shared anchor optimisation fails or its Hessian is unusable,
+ALDEx3 falls back to exact <code>lme4</code> for the entire feature. If
+only particular draw-specific updates fail, ALDEx3 refits those draws
+exactly and retains the accepted BLMM draws. In either case, it emits
+one consolidated warning.</p>
 </div>
 <div id="conceptual-formulation" class="section level2">
 <h2>Conceptual Formulation</h2>
@@ -384,7 +389,8 @@ BLMM introduces:</p>
 <li>One anchor fit per feature.</li>
 <li>One shared local curvature matrix at the anchor.</li>
 <li>Draw-specific local score corrections around the anchor.</li>
-<li>Exact conditional GLS fixed-effect solves for each draw.</li>
+<li>Exact conditional generalized least-squares (GLS) fixed-effect
+solves for each draw.</li>
 </ol>
 <p>This is the cleanest way to describe the method statistically.</p>
 </div>
@@ -402,16 +408,44 @@ u_s \sim N(0, \sigma_s^2 \Sigma_{\theta_s}),
 \qquad
 \varepsilon_s \sim N(0, \sigma_s^2 I_N).
 \]</span></p>
-<p>Here <span class="math inline">\(X\)</span> is the fixed-effects
-design matrix, <span class="math inline">\(Z\)</span> is the
-random-effects design matrix, <span class="math inline">\(\beta_s\)</span> is the draw-specific
-fixed-effects vector, and <span class="math inline">\(\theta_s\)</span>
-denotes the top-level covariance parameters for draw <span class="math inline">\(s\)</span>. As in <code>lme4</code>, BLMM works
-with a relative covariance parameterisation in which <span class="math inline">\(\Sigma_{\theta_s}\)</span> is represented through
-a lower-triangular factor <span class="math inline">\(\Lambda_{\theta_s}\)</span>.</p>
-<p>Write <span class="math inline">\(p = \mathrm{ncol}(X)\)</span> for
-the number of fixed-effect coefficients and <span class="math inline">\(q = \mathrm{ncol}(Z)\)</span> for the number of
-random-effect coefficients.</p>
+<p>Here <span class="math inline">\(X \in \mathbb{R}^{N \times
+p}\)</span> is the fixed-effects design matrix, <span class="math inline">\(\beta_s \in \mathbb{R}^{p}\)</span> is the
+draw-specific fixed-effects vector, <span class="math inline">\(Z \in
+\mathbb{R}^{N \times q}\)</span> is the random-effects design matrix,
+and <span class="math inline">\(u_s \in \mathbb{R}^{q}\)</span> is the
+draw-specific random-effects vector. Thus <span class="math inline">\(p\)</span> is the number of fixed-effect
+coefficients and <span class="math inline">\(q\)</span> is the number of
+random-effect coefficients. The residual standard deviation is <span class="math inline">\(\sigma_s&gt;0\)</span>, <span class="math inline">\(I_N\)</span> denotes the <span class="math inline">\(N \times N\)</span> identity matrix, and the
+superscript <span class="math inline">\(T\)</span> denotes matrix
+transpose.</p>
+<p>The parameter vector <span class="math inline">\(\theta_s\)</span>
+determines the random-effects covariance relative to the residual
+variance. As in <code>lme4</code>, BLMM represents this relative
+covariance by a lower-triangular factor <span class="math inline">\(\Lambda_{\theta_s} \in \mathbb{R}^{q \times
+q}\)</span>: <span class="math display">\[
+\Sigma_{\theta_s}
+=
+\Lambda_{\theta_s}\Lambda_{\theta_s}^T,
+\qquad
+\operatorname{Var}(u_s)
+=
+\sigma_s^2\Lambda_{\theta_s}\Lambda_{\theta_s}^T.
+\]</span> For a random-intercept term with <span class="math inline">\(m\)</span> grouping levels, <span class="math inline">\(\Lambda_{\theta_s}=\theta_s I_m\)</span>, where
+<span class="math inline">\(I_m\)</span> is the <span class="math inline">\(m \times m\)</span> identity matrix. In that
+special case, <span class="math inline">\(\theta_s\)</span> is the ratio
+of the random-intercept standard deviation to the residual standard
+deviation.</p>
+<p>BLMM optimises an unconstrained parameter vector <span class="math inline">\(\phi_s\)</span> rather than <span class="math inline">\(\theta_s\)</span> directly. For each
+covariance-factor component constrained to be nonnegative, BLMM uses
+<span class="math display">\[
+\phi_{sj}=\log(\theta_{sj}),
+\qquad
+\theta_{sj}=\exp(\phi_{sj}).
+\]</span> Components without a lower bound, such as off-diagonal
+covariance-factor entries, are not log-transformed. Accordingly, the
+scalar relation <span class="math inline">\(\theta_s=\exp(\phi_s)\)</span> applies directly to
+a random-intercept-only model but not necessarily to every component of
+a correlated random-effects model.</p>
 <p>BLMM is implemented in the profiled <code>lme4</code> formulation
 rather than through a dense <span class="math inline">\(N \times
 N\)</span> covariance matrix. This does not change the statistical
@@ -425,8 +459,12 @@ A_{\theta_s} = I_q + \Lambda_{\theta_s} Z^T Z \Lambda_{\theta_s}^T,
 R_{ZX,\theta_s} = L_{\theta_s}^{-1}\Lambda_{\theta_s} Z^T X,
 \qquad
 M_{\theta_s} = X^T X - R_{ZX,\theta_s}^T R_{ZX,\theta_s},
-\]</span> where <span class="math inline">\(L_{\theta_s}\)</span> is the
-Cholesky factor of <span class="math inline">\(A_{\theta_s}\)</span>.</p>
+\]</span> where <span class="math inline">\(I_q\)</span> is the <span class="math inline">\(q \times q\)</span> identity matrix and <span class="math inline">\(L_{\theta_s}\)</span> is the lower Cholesky factor
+defined by <span class="math display">\[
+A_{\theta_s}=L_{\theta_s}L_{\theta_s}^T.
+\]</span> Thus <span class="math inline">\(\Lambda_{\theta_s}\)</span>
+describes the random-effects covariance, whereas <span class="math inline">\(L_{\theta_s}\)</span> is a computational factor
+derived from that covariance and the random-effects design matrix.</p>
 <p>The response-dependent part of the draw-specific criterion is the
 profiled weighted residual sum of squares <span class="math display">\[
 \mathrm{PWRSS}_s(\theta_s)
@@ -442,11 +480,16 @@ L_{X,\theta_s}^{-1}
 \left(
 X^T y_s - R_{ZX,\theta_s}^T R_{ZY,\theta_s}
 \right),
-\]</span> and <span class="math inline">\(L_{X,\theta_s}\)</span> the
-Cholesky factor of <span class="math inline">\(M_{\theta_s}\)</span>.</p>
-<p>Up to constants, the profiled REML criterion for one draw is <span class="math display">\[
+\]</span> where <span class="math inline">\(L_{X,\theta_s}\)</span> is
+the lower Cholesky factor defined by <span class="math inline">\(M_{\theta_s}=L_{X,\theta_s}L_{X,\theta_s}^T\)</span>.
+Here <span class="math inline">\(\|\cdot\|\)</span> denotes the
+Euclidean norm, and <span class="math inline">\(|\cdot|\)</span> below
+denotes a matrix determinant.</p>
+<p>Let <span class="math inline">\(\ell_s\)</span> denote the profiled
+REML objective that BLMM minimises. Up to an additive constant that does
+not depend on the covariance parameters, it is <span class="math display">\[
 \ell_s(\theta_s)
-\propto
+=
 \frac{1}{2}
 \left\{
 \log |A_{\theta_s}|
@@ -493,6 +536,10 @@ profiled REML criteria: <span class="math display">\[
 \frac{\mathrm{PWRSS}_s(\phi)}{N-p}
 \right)
 \right\}.
+\]</span> Here expressions such as <span class="math inline">\(A_\phi\)</span> and <span class="math inline">\(M_\phi\)</span> mean that <span class="math inline">\(\phi\)</span> is first mapped to <span class="math inline">\(\theta\)</span>, after which the corresponding
+covariance factor <span class="math inline">\(\Lambda_\theta\)</span>
+and profiled matrices are constructed. The anchor is the minimiser <span class="math display">\[
+\bar{\phi}=\operatorname*{arg\,min}_{\phi}\bar{\ell}(\phi).
 \]</span></p>
 <p>This point is important: the batched anchor uses the <strong>average
 of the per-draw profiled REML criteria</strong>, not a surrogate such as
@@ -501,23 +548,50 @@ The anchor, the draw-specific score correction, and the curvature matrix
 are all defined with respect to this same averaged profiled
 objective.</p>
 <p>BLMM then takes a local second-order approximation around the anchor
-<span class="math inline">\(\bar{\phi}\)</span>. Let <span class="math inline">\(H\)</span> denote the observed Hessian of <span class="math inline">\(\bar{\ell}\)</span> at that anchor. For draw <span class="math inline">\(s\)</span>, BLMM computes a draw-specific score
-correction <span class="math inline">\(g_s\)</span>, defined as the
-difference between the average profiled score and the draw-specific
-profiled score at <span class="math inline">\(\bar{\phi}\)</span>, and
-applies the local Newton update <span class="math display">\[
+<span class="math inline">\(\bar{\phi}\)</span>. Let <span class="math display">\[
+H=\nabla^2\bar{\ell}(\bar{\phi})
+\]</span> denote the observed Hessian of the averaged objective at that
+anchor. For draw <span class="math inline">\(s\)</span>, BLMM computes
+the score correction <span class="math display">\[
+g_s
+=
+\nabla\bar{\ell}(\bar{\phi})-\nabla\ell_s(\bar{\phi}),
+\]</span> the difference between the average and draw-specific profiled
+gradients. It then applies the local Newton update <span class="math display">\[
 \phi_s \approx \bar{\phi} + H^{-1} g_s.
 \]</span></p>
-<p>This yields one updated covariance parameter vector per draw without
-rerunning a full REML optimisation from scratch.</p>
+<p>This yields one proposed covariance parameter vector per draw without
+rerunning a full REML optimisation from scratch. Because the shared
+Hessian may be a poor local approximation for a particular draw, BLMM
+accepts the proposal only when <span class="math display">\[
+\ell_s(\phi_s)
+\leq
+\ell_s(\bar{\phi}) + \tau_s,
+\]</span> where <span class="math inline">\(\tau_s\)</span> is a
+scale-aware numerical tolerance. A non-finite proposal or an objective
+increase larger than <span class="math inline">\(\tau_s\)</span>
+triggers exact <code>lme4</code> fallback for that draw. This check
+rejects demonstrably harmful local updates without requiring a damped
+Newton or trust-region algorithm.</p>
 <p>Conditional on <span class="math inline">\(\phi_s\)</span>, BLMM then
 solves the fixed effects exactly by generalized least squares: <span class="math display">\[
 \hat{\beta}_s
 =
 \left(X^T V_s^{-1}X\right)^{-1}X^T V_s^{-1} y_s,
-\]</span> where <span class="math inline">\(V_s = Z\Sigma_{\theta_s}Z^T
-+ \sigma_s^2 I_N\)</span> is the covariance model implied by the updated
-parameters.</p>
+\]</span> where the marginal covariance implied by the updated
+parameters is <span class="math display">\[
+V_s
+=
+\sigma_s^2
+\left(
+Z\Sigma_{\theta_s}Z^T+I_N
+\right)
+=
+\sigma_s^2
+\left(
+Z\Lambda_{\theta_s}\Lambda_{\theta_s}^T Z^T+I_N
+\right).
+\]</span></p>
 <p>The approximation is therefore confined to the repeated
 covariance-optimisation step. The per-draw fixed-effects solve remains
 exact conditional on the updated covariance model.</p>
@@ -562,7 +636,9 @@ uncertainty against the exact engine.</li>
 covariance terms are retained in the returned random-effects
 output.</li>
 <li>Failure-mode tests verify that BLMM warns and falls back to exact
-<code>lme4</code> instead of silently changing the model.</li>
+<code>lme4</code> when shared-anchor optimisation or Hessian validation
+fails, and for rejected draw-specific updates, instead of silently
+returning an unreliable approximation.</li>
 </ol>
 <p>The practical target is that approximation error in posterior means
 should stay materially smaller than posterior uncertainty used for
@@ -595,22 +671,34 @@ exact and approximate engines use the same mixed-effects formula:</p>
 <span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>  <span class="at">scale =</span> clr.sm,</span>
 <span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>  <span class="at">gamma =</span> <span class="dv">0</span></span>
 <span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>)</span>
-<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">summary</span>(fit_blmm))</span>
-<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt;                                    parameter         entity   estimate</span></span>
-<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt; 1                  treatantiseptic-mouthwash g__Haemophilus  2.3758996</span></span>
-<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; 2                 treatalcoholfree-mouthwash g__Haemophilus  3.2202728</span></span>
-<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; 3                                  treatsoda g__Haemophilus  1.6586761</span></span>
-<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 4                           timec15min-later g__Haemophilus  0.8264883</span></span>
-<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="co">#&gt; 5                            timec2hrs-later g__Haemophilus  2.3811563</span></span>
-<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="co">#&gt; 6 treatantiseptic-mouthwash:timec15min-later g__Haemophilus -2.3012944</span></span>
-<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt;   std.error  p.val.adj</span></span>
-<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#&gt; 1 0.8196615 0.32251795</span></span>
-<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a><span class="co">#&gt; 2 0.8196615 0.01418721</span></span>
-<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a><span class="co">#&gt; 3 0.8196615 0.91176518</span></span>
-<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a><span class="co">#&gt; 4 0.6338824 0.99960265</span></span>
-<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a><span class="co">#&gt; 5 0.6338824 0.02803160</span></span>
-<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a><span class="co">#&gt; 6 0.8964451 0.36972657</span></span></code></pre></div>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co">#&gt; Warning: blmm: 31 draw(s) across 1 feature(s) fell back to exact lme4 because</span></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="co">#&gt; their local covariance updates failed validation. Examples: feature 7: draw 10:</span></span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt; proposed covariance update worsened the profiled REML objective by 0.00210645</span></span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt; (tolerance 1.37528e-06); draw 21: proposed covariance update worsened the</span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; profiled REML objective by 4.7827 (tolerance 1.44495e-06); draw 24: proposed</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; covariance update worsened the profiled REML objective by 0.788883 (tolerance</span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 1.25464e-06) ...</span></span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">summary</span>(fit_blmm))</span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt;                                    parameter         entity   estimate</span></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#&gt; 1                  treatantiseptic-mouthwash g__Haemophilus  2.3758996</span></span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a><span class="co">#&gt; 2                 treatalcoholfree-mouthwash g__Haemophilus  3.2202728</span></span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a><span class="co">#&gt; 3                                  treatsoda g__Haemophilus  1.6586761</span></span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a><span class="co">#&gt; 4                           timec15min-later g__Haemophilus  0.8264883</span></span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a><span class="co">#&gt; 5                            timec2hrs-later g__Haemophilus  2.3811563</span></span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a><span class="co">#&gt; 6 treatantiseptic-mouthwash:timec15min-later g__Haemophilus -2.3012944</span></span>
+<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a><span class="co">#&gt;   std.error  p.val.adj</span></span>
+<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a><span class="co">#&gt; 1 0.8196615 0.32251795</span></span>
+<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a><span class="co">#&gt; 2 0.8196615 0.01418721</span></span>
+<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a><span class="co">#&gt; 3 0.8196615 0.91176518</span></span>
+<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a><span class="co">#&gt; 4 0.6338824 0.99960265</span></span>
+<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a><span class="co">#&gt; 5 0.6338824 0.02803160</span></span>
+<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a><span class="co">#&gt; 6 0.8964451 0.36972657</span></span></code></pre></div>
+<p>In this example, <code>clr.sm</code> centers the scale model on the
+scales implied by the centered log-ratio (CLR) transformation, and
+<code>gamma = 0</code> adds no scale uncertainty around that center.
+These choices reproduce a fixed CLR scale assumption; they are not
+required by the BLMM engine.</p>
 <p>Switching between exact and approximate fitting only changes the
 engine: replace <code>method = &quot;blmm&quot;</code> with
 <code>method = &quot;lme4&quot;</code> for exact variance-component
@@ -995,13 +1083,13 @@ g__Haemophilus
 <span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="at">caption =</span> <span class="fu">paste0</span>(</span>
 <span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>    <span class="st">&quot;Elapsed runtime on the shared-draw vignette subset averaged over K = &quot;</span>,</span>
 <span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>    K,</span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>    <span class="st">&quot; repeated runs. Times will vary by hardware.&quot;</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>    <span class="st">&quot; timing run(s). Times will vary by hardware.&quot;</span></span>
 <span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  )</span>
 <span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>)</span></code></pre></div>
 <table>
 <caption>
 Elapsed runtime on the shared-draw vignette subset averaged over K = 1
-repeated runs. Times will vary by hardware.
+timing run(s). Times will vary by hardware.
 </caption>
 <thead>
 <tr>
@@ -1025,10 +1113,10 @@ speedup_vs_lme4
 lme4
 </td>
 <td style="text-align:right;">
-3.734
+4.439
 </td>
 <td style="text-align:right;">
-3.734
+4.439
 </td>
 <td style="text-align:right;">
 1.000
@@ -1039,13 +1127,13 @@ lme4
 blmm
 </td>
 <td style="text-align:right;">
-0.091
+0.116
 </td>
 <td style="text-align:right;">
-0.091
+0.116
 </td>
 <td style="text-align:right;">
-41.033
+38.267
 </td>
 </tr>
 </tbody>
@@ -1057,18 +1145,15 @@ blmm
 same Monte Carlo draws. The duplicated <code>set.seed(42)</code> above
 enforces that. Without that reset, the comparison would conflate engine
 differences with differences in the posterior draw block itself.</p>
-<p>With identical draws on this vignette subset, the comparison gave a
-maximum absolute posterior-mean coefficient difference of about
-<code>0.023</code>, a median absolute difference effectively
-<code>0</code>, a maximum absolute posterior standard-error difference
-of about <code>0.025</code>, and a median standard-error difference of
-about <code>0.003</code>. Averaging the runtime over <code>K = 10</code>
-repeated runs gave a <code>blmm</code> speedup of about
-<code>11.95x</code> relative to <code>lme4</code> on this subset. That
-is the practical target for BLMM on this example: when compared on the
-same posterior draws, <code>blmm</code> should stay very close to the
-exact <code>lme4</code> engine while avoiding repeated exact
-variance-component optimisation.</p>
+<p>With identical draws on this vignette subset, the maximum absolute
+posterior-mean coefficient difference was 0.024, and the median absolute
+difference was 0. The maximum absolute posterior standard-error
+difference was 0.029, and the median standard-error difference was
+0.003. Across 1 timing replicate, <code>blmm</code> was approximately
+38.27 times as fast as <code>lme4</code> on this subset. These
+comparisons illustrate the practical target for BLMM: on identical
+posterior draws, it should stay close to exact <code>lme4</code> while
+avoiding repeated exact variance-component optimisation.</p>
 </div>
 <div id="runtime-scaling" class="section level2">
 <h2>Runtime Scaling</h2>
